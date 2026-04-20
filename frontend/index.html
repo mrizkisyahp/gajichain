@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GajiChain — Decentralized Payroll Protection</title>
+  <meta name="description" content="Blockchain-based payroll protection for informal workers on Stellar">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:        #070c1a;
+      --bg2:       #0d1628;
+      --card:      rgba(255,255,255,0.04);
+      --card-h:    rgba(255,255,255,0.07);
+      --border:    rgba(255,255,255,0.07);
+      --indigo:    #6366f1;
+      --violet:    #8b5cf6;
+      --cyan:      #22d3ee;
+      --emerald:   #10b981;
+      --amber:     #f59e0b;
+      --red:       #ef4444;
+      --text:      #f1f5f9;
+      --text2:     #94a3b8;
+      --text3:     #475569;
+      --mono:      'JetBrains Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse at 15% 15%, rgba(99,102,241,.09) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 85%, rgba(139,92,246,.07) 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 50%, rgba(34,211,238,.04) 0%, transparent 65%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── NAV ─────────────────────────────────── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 32px;
+      background: rgba(7,12,26,.88);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo { display: flex; align-items: center; gap: 12px; }
+
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 20px rgba(99,102,241,.35);
+    }
+
+    .logo-name {
+      font-size: 20px; font-weight: 800;
+      background: linear-gradient(135deg, #fff, var(--indigo));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .badge {
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .05em;
+    }
+    .badge-amber  { background: rgba(245,158,11,.12); color: var(--amber); border: 1px solid rgba(245,158,11,.25); }
+    .badge-green  { background: rgba(16,185,129,.12); color: var(--emerald); border: 1px solid rgba(16,185,129,.25); }
+    .badge-indigo { background: rgba(99,102,241,.15); color: #a5b4fc; border: 1px solid rgba(99,102,241,.3); }
+
+    #connect-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      color: #fff; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 600; font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: transform .2s, box-shadow .2s;
+      box-shadow: 0 4px 20px rgba(99,102,241,.28);
+    }
+    #connect-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(99,102,241,.45); }
+    #connect-btn.connected {
+      background: rgba(16,185,129,.14);
+      border: 1px solid rgba(16,185,129,.3);
+      color: var(--emerald);
+      box-shadow: none;
+    }
+
+    /* ── BANNER ───────────────────────────────── */
+    .banner {
+      display: flex; align-items: center; justify-content: center;
+      flex-wrap: wrap; gap: 14px;
+      padding: 10px 24px;
+      background: rgba(13,22,40,.7);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+
+    .addr {
+      font-family: var(--mono); font-size: 11px; color: var(--text2);
+      cursor: pointer; transition: color .2s;
+    }
+    .addr:hover { color: var(--cyan); }
+
+    .explorer-link {
+      color: var(--cyan); font-size: 12px; text-decoration: none;
+      transition: opacity .2s;
+    }
+    .explorer-link:hover { opacity: .75; }
+
+    /* ── MAIN ─────────────────────────────────── */
+    main {
+      position: relative; z-index: 1;
+      max-width: 860px; margin: 0 auto;
+      padding: 44px 24px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero { text-align: center; margin-bottom: 48px; }
+
+    .hero h1 {
+      font-size: clamp(30px, 5vw, 52px);
+      font-weight: 900; line-height: 1.1; margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff 0%, var(--indigo) 45%, var(--cyan) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 16px; color: var(--text2);
+      max-width: 480px; margin: 0 auto; line-height: 1.75;
+    }
+
+    /* ── TABS ─────────────────────────────────── */
+    .tabs {
+      display: flex; gap: 4px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 4px;
+      margin-bottom: 28px;
+    }
+
+    .tab {
+      flex: 1; padding: 11px 16px;
+      border: none; border-radius: 9px;
+      background: transparent; color: var(--text2);
+      font-size: 14px; font-weight: 600; font-family: 'Inter', sans-serif;
+      cursor: pointer; transition: all .2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .tab.active {
+      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(99,102,241,.3);
+    }
+    .tab:hover:not(.active) { background: rgba(255,255,255,.06); color: var(--text); }
+
+    /* ── PANELS ───────────────────────────────── */
+    .panel { display: none; flex-direction: column; gap: 20px; }
+    .panel.active { display: flex; }
+
+    /* ── CARD ─────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 26px;
+      position: relative; overflow: hidden;
+      transition: background .25s, border-color .25s;
+    }
+    .card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(99,102,241,.45), transparent);
+      opacity: 0; transition: opacity .25s;
+    }
+    .card:hover::before { opacity: 1; }
+    .card:hover { background: var(--card-h); border-color: rgba(99,102,241,.2); }
+
+    .card-head { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+
+    .card-icon {
+      width: 44px; height: 44px; border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .i-blue    { background: rgba(99,102,241,.15); }
+    .i-violet  { background: rgba(139,92,246,.15); }
+    .i-cyan    { background: rgba(34,211,238,.15); }
+    .i-emerald { background: rgba(16,185,129,.15); }
+    .i-red     { background: rgba(239,68,68,.15); }
+
+    .card-title { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+    .card-desc  { font-size: 13px; color: var(--text2); line-height: 1.5; }
+
+    /* ── FORM ─────────────────────────────────── */
+    .grid   { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 18px; }
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+
+    .field label {
+      display: block;
+      font-size: 11px; font-weight: 600;
+      color: var(--text2); text-transform: uppercase; letter-spacing: .06em;
+      margin-bottom: 7px;
+    }
+
+    .field input, .field select {
+      width: 100%; padding: 11px 13px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--text); font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none; transition: border-color .2s, background .2s, box-shadow .2s;
+    }
+    .field input:focus, .field select:focus {
+      border-color: var(--indigo);
+      background: rgba(99,102,241,.08);
+      box-shadow: 0 0 0 3px rgba(99,102,241,.15);
+    }
+    .field input::placeholder { color: var(--text3); }
+    .field select option { background: #0d1628; }
+
+    .hint { font-size: 11px; color: var(--text3); margin-top: 5px; }
+    .hint code {
+      font-family: var(--mono); font-size: 10px;
+      background: rgba(255,255,255,.07); padding: 1px 5px; border-radius: 4px;
+    }
+
+    /* ── BUTTONS ──────────────────────────────── */
+    .btn {
+      width: 100%; padding: 13px 20px;
+      border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 600; font-family: 'Inter', sans-serif;
+      cursor: pointer; transition: transform .2s, box-shadow .2s, background .2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(99,102,241,.25);
+    }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(99,102,241,.4);
+    }
+    .btn-danger {
+      background: rgba(239,68,68,.12);
+      border: 1px solid rgba(239,68,68,.3);
+      color: var(--red);
+    }
+    .btn-danger:hover:not(:disabled) { background: rgba(239,68,68,.22); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    .btn.loading .label { display: none; }
+    .btn.loading::after {
+      content: '';
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── TOASTS ───────────────────────────────── */
+    #toasts {
+      position: fixed; bottom: 24px; right: 24px;
+      z-index: 9999;
+      display: flex; flex-direction: column; gap: 10px;
+      max-width: 380px;
+    }
+
+    .toast {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 14px 16px; border-radius: 12px;
+      font-size: 13px; line-height: 1.5;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0,0,0,.45);
+      animation: slideIn .3s ease;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(110%); opacity: 0; }
+      to   { transform: translateX(0);    opacity: 1; }
+    }
+    .toast-success { background: rgba(16,185,129,.14); border: 1px solid rgba(16,185,129,.3); color: #d1fae5; }
+    .toast-error   { background: rgba(239,68,68,.14);  border: 1px solid rgba(239,68,68,.3);  color: #fee2e2; }
+    .toast-pending { background: rgba(99,102,241,.14); border: 1px solid rgba(99,102,241,.3); color: #e0e7ff; }
+
+    .t-icon  { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .t-title { font-weight: 700; margin-bottom: 2px; }
+    .t-body  { font-size: 12px; color: rgba(255,255,255,.65); }
+    .t-link  { color: var(--cyan); text-decoration: underline; }
+
+    /* ── RESPONSIVE ───────────────────────────── */
+    @media (max-width: 600px) {
+      nav { padding: 13px 16px; }
+      main { padding: 28px 16px 64px; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .banner { font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">
+    <div class="logo-icon">⛓️</div>
+    <span class="logo-name">GajiChain</span>
+    <span class="badge badge-amber">Testnet</span>
+  </div>
+  <button id="connect-btn" onclick="connectWallet()">
+    🔌 <span id="btn-label">Connect Freighter</span>
+  </button>
+</nav>
+
+<!-- CONTRACT BANNER -->
+<div class="banner">
+  <span class="badge badge-green">● Live</span>
+  <span class="badge badge-indigo">Stellar Testnet</span>
+  <span class="addr" onclick="copyAddr()" title="Click to copy">
+    📋 CASPJPI6YPLU3QS5BLAB2U6R36P24O6RR2JPD6SNM3JZGFXRVYWZWEXZ
+  </span>
+  <a class="explorer-link"
+     href="https://stellar.expert/explorer/testnet/contract/CASPJPI6YPLU3QS5BLAB2U6R36P24O6RR2JPD6SNM3JZGFXRVYWZWEXZ"
+     target="_blank">View on Explorer ↗</a>
+</div>
+
+<!-- MAIN -->
+<main>
+
+  <div class="hero">
+    <h1>Payroll Protection<br>for Every Worker</h1>
+    <p>Lock wages in a smart contract escrow. Workers get paid — guaranteed by code, not by trust.</p>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(this,'employer')">🏢 Employer</button>
+    <button class="tab"        onclick="switchTab(this,'worker')">👷 Worker</button>
+  </div>
+
+  <!-- ── EMPLOYER PANEL ───────────────────────── -->
+  <div id="panel-employer" class="panel active">
+
+    <!-- Create Payroll -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon i-blue">💰</div>
+        <div>
+          <div class="card-title">Create Payroll Escrow</div>
+          <div class="card-desc">Lock salary into the smart contract before the work period begins. Funds are immovable until conditions are met.</div>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="field">
+          <label>Employer Address</label>
+          <input id="cp-employer" type="text" placeholder="G... (your Stellar wallet)">
+        </div>
+        <div class="field">
+          <label>Worker Address</label>
+          <input id="cp-worker" type="text" placeholder="G... (worker's Stellar address)">
+        </div>
+        <div class="grid grid-2">
+          <div class="field">
+            <label>Amount (smallest unit)</label>
+            <input id="cp-amount" type="number" placeholder="10000000">
+            <div class="hint">Native XLM: 10,000,000 = 1 XLM (7 decimals)</div>
+          </div>
+          <div class="field">
+            <label>Pay Schedule</label>
+            <select id="cp-schedule">
+              <option value="Daily">Daily</option>
+              <option value="Weekly" selected>Weekly</option>
+              <option value="Biweekly">Biweekly</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Token Contract Address</label>
+          <input id="cp-token" type="text" placeholder="Stellar Asset Contract (native XLM or USDC testnet)">
+          <div class="hint">Get native XLM SAC: <code>stellar contract id asset --asset native --network testnet</code></div>
+        </div>
+        <div class="field">
+          <label>Period Start (Unix timestamp)</label>
+          <input id="cp-period" type="number" placeholder="e.g. 1745000000">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="createPayroll(this)">
+        <span class="label">🔒 Lock Salary in Escrow</span>
+      </button>
+    </div>
+
+    <!-- Open Dispute -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon i-red">⚖️</div>
+        <div>
+          <div class="card-title">Open Dispute</div>
+          <div class="card-desc">Freeze a payroll and open a formal dispute. You must stake a bond — forfeited if your dispute is invalid.</div>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="grid grid-2">
+          <div class="field">
+            <label>Payroll ID</label>
+            <input id="od-id" type="number" placeholder="e.g. 1">
+          </div>
+          <div class="field">
+            <label>Stake Amount</label>
+            <input id="od-stake" type="number" placeholder="e.g. 1000000">
+            <div class="hint">Forfeited if dispute is invalid</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Employer Address</label>
+          <input id="od-employer" type="text" placeholder="G... (your wallet)">
+        </div>
+        <div class="field">
+          <label>Dispute Reason Hash (32 bytes hex)</label>
+          <input id="od-hash" type="text" placeholder="64 hex chars — SHA-256 of your reason document">
+          <div class="hint">For testing: 64 zeros — <code>0000...0000</code></div>
+        </div>
+      </div>
+      <button class="btn btn-danger" onclick="openDispute(this)">
+        <span class="label">⚠️ Open Dispute</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── WORKER PANEL ─────────────────────────── -->
+  <div id="panel-worker" class="panel">
+
+    <!-- Submit Work Log -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon i-cyan">📋</div>
+        <div>
+          <div class="card-title">Submit Work Log</div>
+          <div class="card-desc">Anchor your proof of work on-chain. Must be done before payment can be released.</div>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="field">
+          <label>Payroll ID</label>
+          <input id="wl-id" type="number" placeholder="e.g. 1">
+        </div>
+        <div class="field">
+          <label>Worker Address</label>
+          <input id="wl-worker" type="text" placeholder="G... (your wallet — must match payroll)">
+        </div>
+        <div class="field">
+          <label>Work Log Hash (32 bytes · 64 hex chars)</label>
+          <input id="wl-hash" type="text" placeholder="0000000000000000000000000000000000000000000000000000000000000000">
+          <div class="hint">SHA-256 of GPS + timestamp + QR. Use 64 zeros for testing.</div>
+        </div>
+        <div class="field">
+          <label>Relayer Signature (64 bytes · 128 hex chars)</label>
+          <input id="wl-sig" type="text" placeholder="00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000">
+          <div class="hint">Use 128 zeros for testing.</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="submitWorkLog(this)">
+        <span class="label">📤 Submit Work Log</span>
+      </button>
+    </div>
+
+    <!-- Release Payment -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon i-emerald">✅</div>
+        <div>
+          <div class="card-title">Release Payment</div>
+          <div class="card-desc">Release the escrowed salary to the worker. Work log must already be submitted.</div>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="field">
+          <label>Payroll ID</label>
+          <input id="rp-id" type="number" placeholder="e.g. 1">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="releasePayment(this)">
+        <span class="label">💸 Release Payment</span>
+      </button>
+    </div>
+
+    <!-- Request Advance -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon i-violet">⚡</div>
+        <div>
+          <div class="card-title">Request Salary Advance</div>
+          <div class="card-desc">Withdraw up to 80% of your locked salary early — at 0% interest. Deducted from final release.</div>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="grid grid-2">
+          <div class="field">
+            <label>Payroll ID</label>
+            <input id="ra-id" type="number" placeholder="e.g. 1">
+          </div>
+          <div class="field">
+            <label>Advance Amount</label>
+            <input id="ra-amount" type="number" placeholder="e.g. 8000000">
+            <div class="hint">Max 80% of total payroll amount</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Worker Address</label>
+          <input id="ra-worker" type="text" placeholder="G... (your wallet)">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="requestAdvance(this)">
+        <span class="label">⚡ Request Advance</span>
+      </button>
+    </div>
+  </div>
+
+</main>
+
+<!-- TOASTS -->
+<div id="toasts"></div>
+
+<script type="module">
+  import * as S from 'https://esm.sh/@stellar/stellar-sdk@12';
+
+  const CONTRACT  = 'CASPJPI6YPLU3QS5BLAB2U6R36P24O6RR2JPD6SNM3JZGFXRVYWZWEXZ';
+  const NETWORK   = S.Networks.TESTNET;
+  const RPC_URL   = 'https://soroban-testnet.stellar.org';
+  const EXPLORER  = 'https://stellar.expert/explorer/testnet/tx/';
+
+  const server = new S.SorobanRpc.Server(RPC_URL);
+  let wallet = null;
+
+  // ── ScVal helpers ──────────────────────────────
+  const addr  = v  => S.Address.fromString(v).toScVal();
+  const u64   = v  => S.nativeToScVal(BigInt(v), { type: 'u64' });
+  const i128  = v  => S.nativeToScVal(BigInt(v), { type: 'i128' });
+  const bytes = hex => {
+    hex = hex.replace(/\s/g, '');
+    if (hex.length % 2) hex = '0' + hex;
+    const buf = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < buf.length; i++) buf[i] = parseInt(hex.slice(i*2, i*2+2), 16);
+    return S.xdr.ScVal.scvBytes(Buffer.from(buf));
+  };
+  // #[contracttype] unit enum → ScvVec([ScvSymbol(name)])
+  const unit  = name => S.xdr.ScVal.scvVec([S.xdr.ScVal.scvSymbol(name)]);
+
+  // ── Wallet ─────────────────────────────────────
+  window.connectWallet = async function () {
+    try {
+      if (!window.freighterApi) {
+        toast('error', 'Freighter Not Found',
+          'Install the <a class="t-link" href="https://freighter.app" target="_blank">Freighter extension</a> then try again.');
+        return;
+      }
+      const conn = await window.freighterApi.isConnected();
+      if (!conn.isConnected) {
+        toast('error', 'Not Connected', 'Unlock your Freighter wallet and try again.'); return;
+      }
+      const res = await window.freighterApi.getPublicKey();
+      wallet = res.publicKey;
+
+      const btn = document.getElementById('connect-btn');
+      btn.classList.add('connected');
+      document.getElementById('btn-label').textContent =
+        wallet.slice(0,6) + '…' + wallet.slice(-4);
+
+      // Auto-fill address fields that are still empty
+      ['cp-employer','cp-worker','od-employer','wl-worker','ra-worker'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && !el.value) el.value = wallet;
+      });
+
+      toast('success', 'Wallet Connected', wallet.slice(0,8) + '…' + wallet.slice(-6));
+    } catch (e) { toast('error', 'Connection Error', e.message); }
+  };
+
+  // ── Generic invoke ──────────────────────────────
+  async function invoke(fn, args, btn) {
+    if (!wallet) { toast('error', 'Not Connected', 'Connect your wallet first.'); return; }
+    btn.disabled = true; btn.classList.add('loading');
+    try {
+      toast('pending', 'Building Transaction', `Preparing <b>${fn}</b>…`);
+
+      const acct = await server.getAccount(wallet);
+      const tx = new S.TransactionBuilder(acct, { fee: '500000', networkPassphrase: NETWORK })
+        .addOperation(new S.Contract(CONTRACT).call(fn, ...args))
+        .setTimeout(30)
+        .build();
+
+      const sim = await server.simulateTransaction(tx);
+      if (S.SorobanRpc.Api.isSimulationError(sim))
+        throw new Error('Simulation: ' + sim.error);
+
+      const assembled = S.SorobanRpc.assembleTransaction(tx, sim).build();
+
+      toast('pending', 'Sign in Freighter', 'Check the Freighter popup…');
+      const signed = await window.freighterApi.signTransaction(assembled.toXDR(), {
+        networkPassphrase: NETWORK,
+        accountToSign: wallet,
+      });
+
+      let result = await server.sendTransaction(
+        S.TransactionBuilder.fromXDR(signed.signedTxXdr, NETWORK)
+      );
+
+      toast('pending', 'Confirming…', `Hash: ${result.hash.slice(0,16)}…`);
+
+      for (let i = 0; i < 24; i++) {
+        if (result.status !== 'PENDING' && result.status !== 'NOT_FOUND') break;
+        await new Promise(r => setTimeout(r, 1500));
+        result = await server.getTransaction(result.hash);
+      }
+
+      if (result.status === 'SUCCESS') {
+        toast('success', `${fn} ✅`, 'Transaction confirmed!',
+          `${EXPLORER}${result.hash || result.txHash}`);
+      } else {
+        throw new Error('Transaction failed — status: ' + result.status);
+      }
+    } catch (e) {
+      console.error(e);
+      toast('error', 'Failed', e.message);
+    } finally {
+      btn.disabled = false; btn.classList.remove('loading');
+    }
+  }
+
+  // ── Contract functions ──────────────────────────
+  window.createPayroll = async function (btn) {
+    const employer  = get('cp-employer');
+    const worker    = get('cp-worker');
+    const amount    = get('cp-amount');
+    const token     = get('cp-token');
+    const schedule  = document.getElementById('cp-schedule').value;
+    const period    = get('cp-period');
+    if (!employer||!worker||!amount||!token||!period)
+      return toast('error','Missing Fields','Fill in all fields.');
+    await invoke('create_payroll',
+      [addr(employer), addr(worker), i128(amount), addr(token), unit(schedule), u64(period)], btn);
+  };
+
+  window.openDispute = async function (btn) {
+    const payrollId = get('od-id');
+    const employer  = get('od-employer');
+    const hash      = get('od-hash').padEnd(64,'0').slice(0,64);
+    const stake     = get('od-stake');
+    if (!payrollId||!employer||!stake)
+      return toast('error','Missing Fields','Fill in all fields.');
+    await invoke('open_dispute',
+      [u64(payrollId), addr(employer), bytes(hash), i128(stake)], btn);
+  };
+
+  window.submitWorkLog = async function (btn) {
+    const payrollId = get('wl-id');
+    const worker    = get('wl-worker');
+    const logHash   = get('wl-hash').padEnd(64,'0').slice(0,64);
+    const sig       = get('wl-sig').padEnd(128,'0').slice(0,128);
+    if (!payrollId||!worker)
+      return toast('error','Missing Fields','Fill in all fields.');
+    await invoke('submit_work_log',
+      [u64(payrollId), addr(worker), bytes(logHash), bytes(sig)], btn);
+  };
+
+  window.releasePayment = async function (btn) {
+    const payrollId = get('rp-id');
+    if (!payrollId) return toast('error','Missing Fields','Enter a Payroll ID.');
+    await invoke('release_payment', [u64(payrollId)], btn);
+  };
+
+  window.requestAdvance = async function (btn) {
+    const payrollId = get('ra-id');
+    const worker    = get('ra-worker');
+    const amount    = get('ra-amount');
+    if (!payrollId||!worker||!amount)
+      return toast('error','Missing Fields','Fill in all fields.');
+    await invoke('request_advance',
+      [u64(payrollId), addr(worker), i128(amount)], btn);
+  };
+
+  // ── UI helpers ──────────────────────────────────
+  window.switchTab = function (tabEl, name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tabEl.classList.add('active');
+    document.getElementById('panel-' + name).classList.add('active');
+  };
+
+  window.copyAddr = function () {
+    navigator.clipboard.writeText(CONTRACT);
+    toast('success', 'Copied!', 'Contract address copied to clipboard.');
+  };
+
+  function get(id) { return document.getElementById(id).value.trim(); }
+
+  function toast(type, title, body, link) {
+    const wrap = document.getElementById('toasts');
+    const el = document.createElement('div');
+    el.className = `toast toast-${type}`;
+    el.innerHTML = `
+      <span class="t-icon">${{success:'✅',error:'❌',pending:'⏳'}[type]}</span>
+      <div>
+        <div class="t-title">${title}</div>
+        <div class="t-body">${body}${link ? ` <a class="t-link" href="${link}" target="_blank">View Tx ↗</a>` : ''}</div>
+      </div>`;
+    wrap.appendChild(el);
+    setTimeout(() => el.remove(), 7000);
+  }
+
+  // Pre-fill timestamp
+  document.getElementById('cp-period').value = Math.floor(Date.now() / 1000);
+</script>
+</body>
+</html>
