@@ -334,7 +334,7 @@
   <span class="badge badge-green">● Live</span>
   <span class="badge badge-indigo">Stellar Testnet</span>
   <span class="addr" onclick="copyAddr()" title="Click to copy">
-    📋 CC2YQLT2ETNBMX5AVIDOI7EWOWIF5T6QYZNEVIWVUSNR3KCDRX4FHMC2
+    📋 CASPJPI6YPLU3QS5BLAB2U6R36P24O6RR2JPD6SNM3JZGFXRVYWZWEXZ
   </span>
   <a class="explorer-link"
      href="https://stellar.expert/explorer/testnet/contract/CASPJPI6YPLU3QS5BLAB2U6R36P24O6RR2JPD6SNM3JZGFXRVYWZWEXZ"
@@ -537,6 +537,58 @@
 <!-- TOASTS -->
 <div id="toasts"></div>
 
+<!-- ── PLAIN SCRIPT: UI logic (works immediately, no CDN needed) ── -->
+<script>
+  const CONTRACT = 'CASPJPI6YPLU3QS5BLAB2U6R36P24O6RR2JPD6SNM3JZGFXRVYWZWEXZ';
+
+  /* Tab switching */
+  function switchTab(tabEl, name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tabEl.classList.add('active');
+    document.getElementById('panel-' + name).classList.add('active');
+  }
+
+  /* Copy contract address */
+  function copyAddr() {
+    navigator.clipboard.writeText(CONTRACT);
+    toast('success', 'Copied!', 'Contract address copied to clipboard.');
+  }
+
+  /* Toast notifications */
+  function toast(type, title, body, link) {
+    const wrap = document.getElementById('toasts');
+    const el = document.createElement('div');
+    el.className = 'toast toast-' + type;
+    const icons = { success: '✅', error: '❌', pending: '⏳' };
+    el.innerHTML =
+      '<span class="t-icon">' + icons[type] + '</span>' +
+      '<div>' +
+        '<div class="t-title">' + title + '</div>' +
+        '<div class="t-body">' + body +
+          (link ? ' <a class="t-link" href="' + link + '" target="_blank">View Tx ↗</a>' : '') +
+        '</div>' +
+      '</div>';
+    wrap.appendChild(el);
+    setTimeout(function() { el.remove(); }, 7000);
+  }
+
+  /* Field getter */
+  function get(id) { return document.getElementById(id).value.trim(); }
+
+  /* Pre-fill period_start with current unix timestamp */
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('cp-period').value = Math.floor(Date.now() / 1000);
+  });
+
+  /* Expose to HTML onclick attributes */
+  window.switchTab = switchTab;
+  window.copyAddr  = copyAddr;
+  window.toast     = toast;
+  window.get       = get;
+</script>
+
+<!-- ── MODULE SCRIPT: Stellar SDK — loaded async, only for tx calls ── -->
 <script type="module">
   import * as S from 'https://esm.sh/@stellar/stellar-sdk@12';
 
@@ -547,6 +599,10 @@
 
   const server = new S.SorobanRpc.Server(RPC_URL);
   let wallet = null;
+
+  // Alias UI helpers defined in the plain script above
+  const toast = window.toast;
+  const get   = window.get;
 
   // ── ScVal helpers ──────────────────────────────
   const addr  = v  => S.Address.fromString(v).toScVal();
@@ -696,36 +752,10 @@
   };
 
   // ── UI helpers ──────────────────────────────────
-  window.switchTab = function (tabEl, name) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    tabEl.classList.add('active');
-    document.getElementById('panel-' + name).classList.add('active');
-  };
+  // switchTab, copyAddr, toast, get are defined in the plain script above
 
-  window.copyAddr = function () {
-    navigator.clipboard.writeText(CONTRACT);
-    toast('success', 'Copied!', 'Contract address copied to clipboard.');
-  };
-
-  function get(id) { return document.getElementById(id).value.trim(); }
-
-  function toast(type, title, body, link) {
-    const wrap = document.getElementById('toasts');
-    const el = document.createElement('div');
-    el.className = `toast toast-${type}`;
-    el.innerHTML = `
-      <span class="t-icon">${{success:'✅',error:'❌',pending:'⏳'}[type]}</span>
-      <div>
-        <div class="t-title">${title}</div>
-        <div class="t-body">${body}${link ? ` <a class="t-link" href="${link}" target="_blank">View Tx ↗</a>` : ''}</div>
-      </div>`;
-    wrap.appendChild(el);
-    setTimeout(() => el.remove(), 7000);
-  }
-
-  // Pre-fill timestamp
-  document.getElementById('cp-period').value = Math.floor(Date.now() / 1000);
+  // Pre-fill timestamp (also done in plain script, this is a fallback)
+  try { document.getElementById('cp-period').value = Math.floor(Date.now() / 1000); } catch(_) {}
 </script>
 </body>
 </html>
