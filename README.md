@@ -80,7 +80,7 @@ We envision a future where inventory systems are transparent, secure, and fully 
 
 | Field | Value |
 |---|---|
-| **Contract Address** | `CASPJPI6YPLU3QS5BLAB2U6R36P24O6RR2JPD6SNM3JZGFXRVYWZWEXZ` |
+| **Contract Address** | `CC2YQLT2ETNBMX5AVIDOI7EWOWIF5T6QYZNEVIWVUSNR3KCDRX4FHMC2` |
 | **Network** | Stellar Testnet |
 | **Language** | Rust (Soroban SDK) |
 | **Storage Type** | Instance Storage |
@@ -162,7 +162,7 @@ Use the IDE's built-in build tool to compile the Rust contract to WebAssembly (W
 Deploy the compiled WASM to the Stellar Testnet directly from the IDE. The deployed contract address is:
 
 ```
-CASPJPI6YPLU3QS5BLAB2U6R36P24O6RR2JPD6SNM3JZGFXRVYWZWEXZ
+CC2YQLT2ETNBMX5AVIDOI7EWOWIF5T6QYZNEVIWVUSNR3KCDRX4FHMC2
 ```
 
 ### 5. Invoke Contract Functions
@@ -190,7 +190,7 @@ Track all transactions and contract state on the Stellar Testnet Explorer:
 
 Search for the contract address:
 ```
-CASPJPI6YPLU3QS5BLAB2U6R36P24O6RR2JPD6SNM3JZGFXRVYWZWEXZ
+CC2YQLT2ETNBMX5AVIDOI7EWOWIF5T6QYZNEVIWVUSNR3KCDRX4FHMC2
 ```
 
 ---

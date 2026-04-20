@@ -1,7 +1,7 @@
 #![no_std]
 
 use soroban_sdk::{
-    contract, contractimpl, contracttype, symbol_short,
+    contract, contractimpl, contracttype, contracterror, symbol_short,
     Address, BytesN, Env, Symbol, token,
 };
 
@@ -83,19 +83,19 @@ pub struct Dispute {
 //  Error Codes
 // ─────────────────────────────────────────────
 
-#[contracttype]
+#[contracterror]
 #[derive(Clone, Debug, PartialEq)]
 pub enum ContractError {
-    PayrollNotFound,
-    PayrollAlreadyReleased,
-    PayrollAlreadyDisputed,
-    PayrollNotActive,
-    WorkLogAlreadySubmitted,
-    WorkLogNotSubmitted,
-    UnauthorizedCaller,
-    AdvanceExceedsLimit,
-    InvalidAmount,
-    DisputeNotFound,
+    PayrollNotFound        = 1,
+    PayrollAlreadyReleased = 2,
+    PayrollAlreadyDisputed = 3,
+    PayrollNotActive       = 4,
+    WorkLogAlreadySubmitted = 5,
+    WorkLogNotSubmitted    = 6,
+    UnauthorizedCaller     = 7,
+    AdvanceExceedsLimit    = 8,
+    InvalidAmount          = 9,
+    DisputeNotFound        = 10,
 }
 
 // ─────────────────────────────────────────────
