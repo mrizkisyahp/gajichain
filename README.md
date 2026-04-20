@@ -75,6 +75,8 @@ We envision a future where a construction worker in Bekasi has the same payroll 
 
 - Contract Address: CC2YQLT2ETNBMX5AVIDOI7EWOWIF5T6QYZNEVIWVUSNR3KCDRX4FHMC2
 
+![Contract Deployment Screenshot](brave_bbeidhErm4.png)
+
 ### Core Functions
 
 | Function | Parameters | Description |
